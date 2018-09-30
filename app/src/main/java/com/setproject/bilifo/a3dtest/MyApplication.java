@@ -3,28 +3,25 @@ package com.setproject.bilifo.a3dtest;
 import android.app.Application;
 import android.support.annotation.Nullable;
 
-import com.setproject.bilifo.a3dtest.model.Model;
+import com.setproject.bilifo.a3dtest.bean.Model3D;
 
 public class MyApplication extends Application {
 
     private static MyApplication INSTANCE;
 
-    // Store the current model globally, so that we don't have to re-decode it upon
-    // relaunching the main or VR activities.
-    // TODO: handle this a bit better.
     @Nullable
-    private Model currentModel = null;
+    private Model3D currentModel = null;
 
     public static MyApplication getInstance() {
         return INSTANCE;
     }
 
     @Nullable
-    public Model getCurrentModel() {
+    public Model3D getCurrentModel() {
         return currentModel;
     }
 
-    public void setCurrentModel(@Nullable Model model) {
+    public void setCurrentModel(@Nullable Model3D model) {
         currentModel = model;
     }
 

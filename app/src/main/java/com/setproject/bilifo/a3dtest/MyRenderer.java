@@ -5,13 +5,12 @@ import android.opengl.GLSurfaceView;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.setproject.bilifo.a3dtest.model.Model;
+import com.setproject.bilifo.a3dtest.bean.Model3D;
+import com.setproject.bilifo.a3dtest.interfaces.onObject3DChangeState;
 import com.threed.jpct.Camera;
 import com.threed.jpct.FrameBuffer;
 import com.threed.jpct.GLSLShadowInjector;
 import com.threed.jpct.Light;
-import com.threed.jpct.Loader;
-import com.threed.jpct.Matrix;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.Projector;
 import com.threed.jpct.RGBColor;
@@ -21,17 +20,12 @@ import com.threed.jpct.util.ExtendedPrimitives;
 import com.threed.jpct.util.MemoryHelper;
 import com.threed.jpct.util.ShadowHelper;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class MyRenderer implements GLSurfaceView.Renderer {
     @NonNull
-    private Model mmodel;
+    private Model3D mmodel;
 
     private FrameBuffer fb = null;
     private World world = null;
@@ -51,7 +45,7 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 
     Context mcontext;
 
-    public MyRenderer(Context context, Model model) {
+    public MyRenderer(Context context, Model3D model) {
         mmodel = model;
         mcontext = context;
     }
@@ -169,14 +163,6 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 
     private onObject3DChangeState listen = null;
 
-    public interface onObject3DChangeState {
-        public boolean scale();
-
-        public boolean rotateY();
-
-        public boolean rotateX();
-    }
-
     public void registerListener(onObject3DChangeState listener) {
         listen = listener;
     }
@@ -185,92 +171,72 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         listen = null;
     }
 
-    private Object3D loadAssets3DSModels(String fileName, String texture, float scale) {
+//    private Object3D loadAssets3DSModels(String fileName, String texture, float scale) {
+//        InputStream stream = null;
 //        try {
-//            InputStream stream = mcontext.getResources().getAssets().open(fileName);
-//            Object3D[] model = Loader.load3DS(stream, scale);
-//            Object3D temp = model[0];
-//            if (texture != null && (!TextUtils.isEmpty(texture))) {
-//                temp.setTexture(texture);
-//            }
-//            temp.strip();
-//            temp.build();
-//
-//            return temp;
+//            stream = mcontext.getResources().getAssets().open(fileName);
+//            return loadAssets3DSModels(stream,texture,scale);
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
+//        return null;
+//    }
 
-        InputStream stream = null;
-        try {
-            stream = mcontext.getResources().getAssets().open(fileName);
-            Object3D[] model = Loader.load3DS(stream, scale);
-            Object3D o3d = new Object3D(0);
-            Object3D temp = null;
-            for (int i = 0; i < model.length; i++) {
-                temp = model[i];
-                temp.setCenter(SimpleVector.ORIGIN);
-                temp.rotateX((float) (-.5 * Math.PI));
-                temp.rotateMesh();
-                temp.setRotationMatrix(new Matrix());
-                o3d = Object3D.mergeObjects(o3d, temp);
-                o3d.build();
-            }
-            return o3d;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+//    private Object3D loadAssets3DSModels(InputStream stream, String texture, float scale) {
+//        Object3D[] model = Loader.load3DS(stream, scale);
+//        Object3D o3d = new Object3D(0);
+//        Object3D temp = null;
+//        for (int i = 0; i < model.length; i++) {
+//            temp = model[i];
+////            temp.setCenter(SimpleVector.ORIGIN);
+////            temp.rotateX((float) (-.5 * Math.PI));
+////            temp.rotateMesh();
+////            temp.setRotationMatrix(new Matrix());
+//            o3d = Object3D.mergeObjects(o3d, temp);
+//
+//        }
+//
+//        return o3d;
+//    }
 
-    private Object3D loadSDcard3DSModels(Model sdmodel, float scale) {
+//    private Object3D loadSDcard3DSModels(Model3D sdmodel, float scale) {
+//
+//        InputStream stream = null;
+//        try {
+//            stream = new FileInputStream(new File(sdmodel.getModelPath()));
+//            return loadAssets3DSModels(stream,null,scale);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
 
-        InputStream stream = null;
-        try {
-            stream = new FileInputStream(new File(sdmodel.getModelPath()));
-            Object3D[] model = Loader.load3DS(stream, scale);
-            Object3D o3d = new Object3D(0);
-            Object3D temp = null;
-            for (int i = 0; i < model.length; i++) {
-                temp = model[i];
-                temp.setCenter(SimpleVector.ORIGIN);
-                temp.rotateX((float) (-.5 * Math.PI));
-                temp.rotateMesh();
-                temp.setRotationMatrix(new Matrix());
-                o3d = Object3D.mergeObjects(o3d, temp);
-                o3d.build();
-            }
-            return o3d;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+//    public void create3DSObjModels(String filePathName, int drawableID) {
+////        Texture texture2 = new Texture(BitmapHelper.rescale(BitmapHelper.convert(mcontext.getResources().getDrawable(drawableID)), 512, 512));
+////        TextureManager.getInstance().addTexture("texture2", texture2);
+//        obj = loadAssets3DSModels(filePathName + ".3ds", null, 5f);
+//
+//        obj.setCulling(true);
+//        obj.setRotationPivot(SimpleVector.ORIGIN);
+//        obj.setLighting(Object3D.LIGHTING_ALL_ENABLED);
+//        obj.translate(0, 20, 0);
+//        obj.build();
+//    }
 
-    public void create3DSObjModels(String filePathName, int drawableID) {
-//        Texture texture2 = new Texture(BitmapHelper.rescale(BitmapHelper.convert(mcontext.getResources().getDrawable(drawableID)), 512, 512));
-//        TextureManager.getInstance().addTexture("texture2", texture2);
-        obj = loadAssets3DSModels(filePathName + ".3ds", null, 5f);
-        obj.setCulling(true);
-        obj.setRotationPivot(SimpleVector.ORIGIN);
-        obj.setLighting(Object3D.LIGHTING_ALL_ENABLED);
-        obj.translate(0, 20, 0);
-
-    }
-
-    public void create3DSObjModels(Model model) {
+    public void create3DSObjModels(Model3D model) {
+        Log.d("pjl","create3DSObjModels model:"+model);
         if (model.getObj() == null) {
-            obj =loadSDcard3DSModels(model,5f);
+//            obj = loadSDcard3DSModels(model, 5f);
         } else {
             obj = model.getObj();
         }
+        Log.d("pjl","create3DSObjModels getObj:"+obj);
         obj.setCulling(true);
         obj.setRotationPivot(SimpleVector.ORIGIN);
         obj.setLighting(Object3D.LIGHTING_ALL_ENABLED);
         obj.translate(0, 20, 0);
+
+        obj.build();
     }
 
-    public void loadModel(Model model) {
-
-    }
 }

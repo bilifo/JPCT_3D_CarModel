@@ -11,7 +11,13 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
-import com.setproject.bilifo.a3dtest.model.Model;
+import com.setproject.bilifo.a3dtest.bean.Model3D;
+import com.setproject.bilifo.a3dtest.interfaces.onObject3DChangeState;
+import com.setproject.bilifo.a3dtest.utils.ModelUtils;
+import com.threed.jpct.Object3D;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class MyGLSurfaceView extends GLSurfaceView {
     @NonNull
@@ -19,7 +25,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
     private AsyncTask task;
     private ProgressDialog mProgressDialog;
 
-    MyRenderer.onObject3DChangeState listen = new MyRenderer.onObject3DChangeState() {
+        onObject3DChangeState listen = new onObject3DChangeState() {
 
         @Override
         public boolean scale() {
@@ -56,7 +62,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
     };
     private Context mContext;
 
-    public MyGLSurfaceView(Context context, @Nullable Model model) {
+    public MyGLSurfaceView(Context context, @Nullable Model3D model) {
         super(context);
         this.mContext = context;
         setEGLConfigChooser(8, 8, 8, 8, 16, 0);
@@ -113,14 +119,14 @@ public class MyGLSurfaceView extends GLSurfaceView {
             case MotionEvent.ACTION_MOVE:
                 if (touchPoint == 2) {
 //                    Log.d("pjl++","ACTION_MOVE---2");
-                    if (listen != null) {
-                        afterScaleValue = spacing(event);
-                        scaleValue = afterScaleValue / beforeScaleValue;
-                        if (scaleValue != 0) {
-                            listen.scale();
-                        }
-                        beforeScaleValue = afterScaleValue;
+                    afterScaleValue = spacing(event);
+                    scaleValue = afterScaleValue / beforeScaleValue;
+                    if (scaleValue != 0) {
+                        renderer.scale(scaleValue);
+                        scaleValue = 0;
+                        return true;
                     }
+                    beforeScaleValue = afterScaleValue;
                 } else {
                     if (touchEventUsed == false) {
 //                        Log.d("pjl++", "ACTION_MOVE---1");
@@ -128,9 +134,15 @@ public class MyGLSurfaceView extends GLSurfaceView {
                         moveY = event.getY();
                         turnX = (moveX - downX) / -100f;
                         turnY = (moveY - downY) / -100f;
-                        if (listen != null) {
-                            listen.rotateX();
-                            listen.rotateY();
+                        if (turnX != 0) {
+                            renderer.rotateY(turnX);
+                            turnX = 0;
+                            return true;
+                        }
+                        if (turnY != 0) {
+                            renderer.rotateX(turnY);
+                            turnY = 0;
+                            return true;
                         }
                         downX = moveX;
                         downY = moveY;
@@ -160,7 +172,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
         return super.onTouchEvent(event);
     }
 
-    public void loadModel(final Model model) {
+    public void loadModel(final Model3D model) {
 
         mProgressDialog = new ProgressDialog(mContext);
         mProgressDialog.setMessage("加载模型中");
@@ -194,10 +206,20 @@ public class MyGLSurfaceView extends GLSurfaceView {
     /**
      * 加载模型的策略,区分模型是从asset,raw,sdcard等地方来的
      */
-    private void loadModelPolicy(Model model) {
+    private void loadModelPolicy(Model3D model) {
         if (model == null) {
-            renderer.create3DSObjModels("t458", R.drawable.dragon_ground_color);
-        }else{
+            Log.d("pjl++","loadModelPolicy-->"+model);
+            Model3D temp = new Model3D();
+            InputStream inputStream=null;
+            try {
+                inputStream = (mContext.getResources().getAssets().open("t458.3ds"));
+                Object3D obj = ModelUtils.createModelObject3D(ModelUtils.getFileSuffiy(ModelUtils.getFileSuffiyStr("t458.3ds")), inputStream);
+                temp.setObj(obj);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            renderer.create3DSObjModels(temp);
+        } else {
             renderer.create3DSObjModels(model);
         }
     }
